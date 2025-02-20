@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { QrReader } from "react-qr-reader";
 
 interface QrScannerProps {
@@ -10,7 +10,7 @@ interface QrScannerProps {
 const QrScanner: React.FC<QrScannerProps> = ({ onScanSuccess }) => {
   const [data, setData] = useState<string | null>(null);
 
-  const handleScanSuccess = (qrData: string) => {
+  const handleScanSuccess = async (qrData: string) => {
     console.log("QR Code identificado:", qrData);
     setData(qrData);
 
@@ -22,8 +22,8 @@ const QrScanner: React.FC<QrScannerProps> = ({ onScanSuccess }) => {
     <div>
       <QrReader
         onResult={(result, error) => {
-          if (result) {
-            handleScanSuccess(result.getText()); // Usar getText() para acessar o texto do QR code
+          if (result && typeof result.getText === "function") {
+            handleScanSuccess(result.getText());
           }
           if (error) {
             console.error(error);
