@@ -28,7 +28,7 @@ export function InputMoeda({ value, onChange, name, id }: InputMoedaProps) {
     if (!isNaN(numericValue)) {
       setDisplayValue(numericValue.toFixed(2).replace(".", ","))
     } else {
-      setDisplayValue("0,00")
+      setDisplayValue("")
       onChange(0)
     }
   }
@@ -41,7 +41,7 @@ export function InputMoeda({ value, onChange, name, id }: InputMoedaProps) {
       onBlur={handleBlur}
       name={name}
       id={id}
-      placeholder="0,00"
+      placeholder=""
     />
   )
 }

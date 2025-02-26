@@ -2,6 +2,7 @@ import type React from "react"
 import { exportToCSV } from "../utils/csvHelper"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Pencil, Trash2 } from "lucide-react"
 import ManualEntryForm, { type CupomData } from "./ManualEntryForm"
 
 interface CupomListProps {
@@ -13,13 +14,7 @@ interface CupomListProps {
 
 const CupomList: React.FC<CupomListProps> = ({ cupons, onClear, onEdit, onDelete }) => {
   const handleExportAndClear = () => {
-    const dataRows = cupons.map(cupom => ({
-      nome: cupom.nome,
-      number: cupom.number,
-      valor: cupom.valor,
-      data: cupom.data
-    }))
-    exportToCSV(dataRows)
+    exportToCSV(cupons)
     onClear()
   }
 
@@ -46,9 +41,13 @@ const CupomList: React.FC<CupomListProps> = ({ cupons, onClear, onEdit, onDelete
                 <TableCell>{cupom.data}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
-                    <ManualEntryForm onSubmit={(data) => onEdit(cupom.id!, data)} initialData={cupom} />
-                    <Button variant="destructive" onClick={() => onDelete(cupom.id!)}>
-                      Excluir
+                    <ManualEntryForm onSubmit={(data) => onEdit(cupom.id!, data)} initialData={cupom}>
+                      <Button variant="ghost" size="icon">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </ManualEntryForm>
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(cupom.id!)}>
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>

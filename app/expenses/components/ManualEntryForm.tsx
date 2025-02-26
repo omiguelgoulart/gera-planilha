@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 interface ManualEntryFormProps {
   onSubmit: (data: CupomData) => void
   initialData?: CupomData
+  children?: React.ReactNode
 }
 
 export interface CupomData {
@@ -20,14 +21,14 @@ export interface CupomData {
   data: string
 }
 
-const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit, initialData }) => {
+const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit, initialData, children }) => {
   const [open, setOpen] = React.useState(false)
   const form = useForm<CupomData>({
     defaultValues: initialData || {
       nome: "",
       number: "",
       valor: "",
-      data: new Date().toISOString().split("T")[0], // Set default to today's date
+      data: new Date().toISOString().split("T")[0],
     },
   })
 
@@ -40,7 +41,7 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit, initialData
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{initialData ? "Editar Entrada" : "Entrada Manual"}</Button>
+        {children || <Button variant="outline">{initialData ? "Editar Entrada" : "Entrada Manual"}</Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

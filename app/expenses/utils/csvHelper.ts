@@ -1,26 +1,16 @@
-// src/utils/csvHelper.ts
-interface DataRow {
-  [key: string]: string | number | boolean;
+import FileSaver from "file-saver"
+import type { CupomData } from "../components/ManualEntryForm"
+
+export const exportToCSV = (data: CupomData[]) => {
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    "Nome,Nº/ Série,Valor,Data\n" + // CSV header
+    data.map((row) => `${row.nome},${row.number},${row.valor},${row.data}`).join("\n")
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+  FileSaver.saveAs(blob, "cupons.csv")
+
+  // Clear localStorage after exporting
+  localStorage.removeItem("cupons")
 }
 
-export const exportToCSV = (data: DataRow[]) => {
-    const csvRows = [];
-    const headers = Object.keys(data[0]);
-    csvRows.push(headers.join(',')); // Adiciona cabeçalhos das colunas
-  
-    for (const row of data) {
-      const values = headers.map(header => row[header]);
-      csvRows.push(values.join(','));
-    }
-  
-    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.setAttribute('hidden', '');
-    a.setAttribute('href', url);
-    a.setAttribute('download', 'cupons_fiscais.csv');
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-  
