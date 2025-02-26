@@ -7,102 +7,89 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
-// Defina a interface para os dados do formulário
-interface FormData {
+interface ManualEntryFormProps {
+  onSubmit: (data: CupomData) => void
+  initialData?: CupomData
+}
+
+export interface CupomData {
+  id?: string
   nome: string
   number: string
   valor: string
   data: string
 }
 
-interface ManualEntryFormProps {
-  onSubmit: (data: FormData) => void
-}
-
-const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) => {
+const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit, initialData }) => {
   const [open, setOpen] = React.useState(false)
-
-  // Inicialize o formulário com a interface FormData
-  const form = useForm<FormData>({
-    defaultValues: {
+  const form = useForm<CupomData>({
+    defaultValues: initialData || {
       nome: "",
       number: "",
       valor: "",
-      data: "",
+      data: new Date().toISOString().split("T")[0], // Set default to today's date
     },
   })
 
-  // Função chamada ao enviar o formulário
-  const handleSubmit = (data: FormData) => {
-    onSubmit(data) // Passa os dados para a função onSubmit
-    setOpen(false) // Fecha o modal
-    form.reset() // Reseta o formulário
+  const handleSubmit = (data: CupomData) => {
+    onSubmit(data)
+    setOpen(false)
+    form.reset()
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Entrada Manual</Button>
+        <Button variant="outline">{initialData ? "Editar Entrada" : "Entrada Manual"}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Adicionar Cupom Manualmente</DialogTitle>
+          <DialogTitle>{initialData ? "Editar Cupom" : "Adicionar Cupom Manualmente"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {/* Campo Nome */}
             <FormField
               control={form.control}
               name="nome"
-              rules={{ required: "O nome é obrigatório" }} // Validação
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nome</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Digite o nome" />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* Campo Nº/ Série */}
             <FormField
               control={form.control}
               name="number"
-              rules={{ required: "O número/série é obrigatório" }} // Validação
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nº/ Série</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Digite o número/série" />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* Campo Valor */}
             <FormField
               control={form.control}
               name="valor"
-              rules={{ required: "O valor é obrigatório" }} // Validação
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Valor</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Digite o valor" type="number" />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* Campo Data */}
             <FormField
               control={form.control}
               name="data"
-              rules={{ required: "A data é obrigatória" }} // Validação
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Data</FormLabel>
@@ -113,9 +100,7 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) => {
                 </FormItem>
               )}
             />
-
-            {/* Botão de envio */}
-            <Button type="submit">Adicionar</Button>
+            <Button type="submit">{initialData ? "Atualizar" : "Adicionar"}</Button>
           </form>
         </Form>
       </DialogContent>
@@ -124,3 +109,4 @@ const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) => {
 }
 
 export default ManualEntryForm
+

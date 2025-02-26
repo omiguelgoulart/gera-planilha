@@ -3,15 +3,9 @@
 import { useState, useEffect } from "react"
 import QrScannerModal from "./components/QrScannerModal"
 import CupomList from "./components/CupomList"
-import ManualEntryForm from "./components/ManualEntryForm"
+import ManualEntryForm, { type CupomData } from "./components/ManualEntryForm"
 import axios from "axios"
-
-interface CupomData {
-  nome: string
-  valor: string
-  data: string
-  number: string
-}
+import { v4 as uuidv4 } from "uuid"
 
 export default function Entradas() {
   const [, setCupomData] = useState<string | null>(null)
@@ -38,7 +32,8 @@ export default function Entradas() {
         params: { url: qrData },
       })
 
-      const updatedHistory = [...history, response.data]
+      const newCupom = { ...response.data, id: uuidv4() }
+      const updatedHistory = [...history, newCupom]
       setHistory(updatedHistory)
 
       localStorage.setItem("cupons", JSON.stringify(updatedHistory))
@@ -55,14 +50,27 @@ export default function Entradas() {
   }
 
   const handleManualEntry = (data: CupomData) => {
-    const updatedHistory = [...history, data]
+    const newCupom = { ...data, id: uuidv4() }
+    const updatedHistory = [...history, newCupom]
+    setHistory(updatedHistory)
+    localStorage.setItem("cupons", JSON.stringify(updatedHistory))
+  }
+
+  const handleEdit = (id: string, data: CupomData) => {
+    const updatedHistory = history.map((cupom) => (cupom.id === id ? { ...data, id } : cupom))
+    setHistory(updatedHistory)
+    localStorage.setItem("cupons", JSON.stringify(updatedHistory))
+  }
+
+  const handleDelete = (id: string) => {
+    const updatedHistory = history.filter((cupom) => cupom.id !== id)
     setHistory(updatedHistory)
     localStorage.setItem("cupons", JSON.stringify(updatedHistory))
   }
 
   return (
     <div className="flex flex-col items-center">
-      <h1 className="text-3xl font-bold mb-6 text-primary">Tabela de saídas</h1>
+      <h1 className="text-3xl font-bold mb-6 text-primary">Entradas de Cupons Fiscais</h1>
       <div className="flex gap-4 mb-6">
         <QrScannerModal onScanSuccess={handleScanSuccess} />
         <ManualEntryForm onSubmit={handleManualEntry} />
@@ -70,7 +78,7 @@ export default function Entradas() {
 
       {loading && <p className="text-muted-foreground">Carregando...</p>}
 
-      <CupomList cupons={history} onClear={handleClearList} />
+      <CupomList cupons={history} onClear={handleClearList} onEdit={handleEdit} onDelete={handleDelete} />
     </div>
   )
 }
