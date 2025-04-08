@@ -1,33 +1,44 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
-import { styled } from '@mui/material/styles';
-import Loading from '../Loading';
 
-const QrReader = dynamic(() => import('react-qr-reader-es6'), {
-  ssr: false,
-});
+// Importa dinamicamente o QrReader (evita SSR quebrar com WebRTC)
+const QrReader = dynamic(() => import('react-qr-reader-es6'), { ssr: false });
 
-type QRCodeScannerProps = {
+// Define as props personalizadas para aceitar `constraints`
+interface QrReaderWithConstraintsProps extends ComponentProps<typeof QrReader> {
+  constraints?: {
+    video: {
+      facingMode: string;
+      width: { ideal: number };
+      height: { ideal: number };
+    };
+  };
+}
+
+// Aplica a nova tipagem ao componente dinamicamente importado
+const QrReaderWithConstraints = QrReader as React.ComponentType<QrReaderWithConstraintsProps>;
+
+interface QRCodeScannerProps {
   setCode: (code: string) => void;
   setOpen: (open: boolean) => void;
-};
-
-const StyledWrapper = styled('div')({
-  '& .qr-reader section > div': {
-    boxShadow: 'white 0px 0px 0px 2px inset !important',
-  },
-});
+}
 
 export function QRCodeScanner({ setCode, setOpen }: QRCodeScannerProps) {
   const [loading, setLoading] = useState(true);
+  const [shouldShowScanner, setShouldShowScanner] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+      setShouldShowScanner(true);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      setShouldShowScanner(false);
+    };
   }, []);
 
   const handleScan = (data: string | null) => {
@@ -38,29 +49,43 @@ export function QRCodeScanner({ setCode, setOpen }: QRCodeScannerProps) {
   };
 
   const handleError = (err: unknown) => {
-    if (err instanceof Error) {
-      console.error('Erro ao ler QR Code:', err.message);
-    } else {
-      console.error('Erro desconhecido ao ler QR Code:', err);
+    if (
+      err instanceof DOMException &&
+      err.name === 'AbortError' &&
+      err.message.includes('play() request')
+    ) {
+      return;
     }
+    console.error('Erro ao acessar câmera:', err);
   };
-  
 
   return (
-    <StyledWrapper className="w-full flex justify-center items-center mt-4">
-      {loading ? (
-        <div className="mb-8">
-          <Loading />
-        </div>
-      ) : (
-        <QrReader
-          className="qr-reader"
-          delay={300}
-          onError={handleError}
-          onScan={handleScan}
-          style={{ width: '100%', maxWidth: '400px' }}
-        />
+    <div className="w-full flex flex-col justify-center items-center">
+      {loading && (
+        <p className="text-muted-foreground mb-4 text-sm">Carregando câmera...</p>
       )}
-    </StyledWrapper>
+
+      {!loading && shouldShowScanner && (
+        <>
+          <p className="text-sm text-gray-500 text-center mb-4">
+            Aproxime a câmera do QR Code para melhorar o foco automático.
+          </p>
+
+          <QrReaderWithConstraints
+            delay={300}
+            onError={handleError}
+            onScan={handleScan}
+            style={{ width: '100%', maxWidth: '400px' }}
+            constraints={{
+              video: {
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+              },
+            }}
+          />
+        </>
+      )}
+    </div>
   );
 }
